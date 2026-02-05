@@ -42,7 +42,7 @@ data <- extract.breeds("Dataset", "clusterfst.txt", "Sam_IrishSuffolkvsScottishB
 Perform a standardized FST analysis between the selected breeds and upload the resulting plot with repetitive grey and black colour (use a y-axis of 6 and select only significant region with more than 4 SNPs). (5 points) (save file as example: Yourfirtsname_ScottishTexelvsScottishBlackface)
 
 ```{r data}
-std.fst <- function(bfileBasename, clusterFile, fstOutFileBasename) {
+gen.fst <- function(bfileBasename, clusterFile, fstOutFileBasename) {
   system(paste("plink --bfile", bfileBasename,
                "--chr-set 26 --autosome",
                "--fst --within", clusterFile,
@@ -50,10 +50,24 @@ std.fst <- function(bfileBasename, clusterFile, fstOutFileBasename) {
                sep = " "))
 }
 
-data.fst <- std.fst("Sam_IrishSuffolkvsScottishBlackface",
-                    "clusterfst.txt",
-                    "Sam_IrishSuffolkvsScottishBlackface_FST")
+gen.fst("Sam_IrishSuffolkvsScottishBlackface",
+        "clusterfst.txt",
+        "Sam_IrishSuffolkvsScottishBlackface_FST")
 ```
+
+Load and visualize Fst results
+```{r}
+fst.Balothers.weir <- read.delim("Sam_IrishSuffolkvsScottishBlackface_FST.fst") %>%
+  drop_na() 
+fst.sd.oth <- sd(fst.Balothers.weir$FST, na.rm = TRUE)
+fst.mean.oth <- mean(fst.Balothers.weir$FST, na.rm = TRUE)
+```
+
+Calculate Zfst
+```{r fst.Balothers.weir}
+fst.Balothers.weir$Zfst <- ((fst.Balothers.weir$Fst - fst.mean.oth)/fst.sd.oth)
+```
+
 
 
 ## 3.  

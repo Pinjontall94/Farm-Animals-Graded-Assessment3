@@ -178,9 +178,186 @@ write.csv(x = fst.Balothers.n3, file = "Sam_IrishSuffolkvsScottishBlackface_FST_
 
 xpehh <- function(bfileBasename, outfile) {
   data <- bfileBasename
+  # TODO: add the analysis below into this function body
 }
 data.xpehh <- xpehh("Sam_IrishSuffolkvsScottishBlackface", "Sam_IrishSuffolkvsScottishBlackface_XPEHH.tiff")
 
+#create bfile for each chromosome per population
+CHR= c(1:26)
+i="Sam_IrishSuffolkvsScottishBlackface_Bal"
+library(foreach)
+foreach (r=CHR) %do% {
+  cmd <- paste0("plink2 --bfile ", i, "new --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
+  system(cmd)
+}
+
+i="Sam_IrishSuffolkvsScottishBlackface_Bar"
+library(foreach)
+foreach (r=CHR) %do% {
+  cmd <- paste0("plink2 --bfile ", i, "new --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
+  system(cmd)
+}
+
+
+#create vcf for each chromosome per population
+i="Sam_IrishSuffolkvsScottishBlackface_Bal"
+library(foreach)
+foreach (r=CHR) %do% {
+  cmd <- paste0("plink2 --bfile ", i, "_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
+  system(cmd)
+}
+
+i="Sam_IrishSuffolkvsScottishBlackface_Bar"
+library(foreach)
+foreach (r=CHR) %do% {
+  cmd <- paste0("plink2 --bfile ", i, "_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
+  system(cmd)
+}
+
+
+## Run Beagle to phase each VCF file in linux for each population and all chromosomes
+for z in {1..26};do java -Xmx25000m -jar beagle.jar gt=Sam_IrishSuffolkvsScottishBlackface_Bal_chr${z}_data.vcf  out=Sam_IrishSuffolkvsScottishBlackface_Bal_chr${z}_phased nthreads=128;done
+for z in {1..26};do java -Xmx25000m -jar beagle.jar gt=Sam_IrishSuffolkvsScottishBlackface_Bar_chr${z}_data.vcf  out=Sam_IrishSuffolkvsScottishBlackface_Bar_chr${z}_phased nthreads=128;done
+read.table
+
+##################################################################################Baldata
+for(i in 1:26) {
+  # haplotype file name for each chromosome
+  vcf_file = paste("Sam_IrishSuffolkvsScottishBlackface_Bal_chr", i, "_phased.vcf.gz", sep = "")
+  # create internal representation
+  hh <-data2haplohh(hap_file = vcf_file, 
+                    chr.name = i, 
+                    polarize_vcf = FALSE,
+                    vcf_reader = "data.table")  # Skip ancestral allele polarization
+  # perform scan on a single chromosome (calculate iHH values)
+  scan <- scan_hh(hh)
+  # concatenate chromosome-wise data frames to
+  # a data frame for the whole genome
+  # (more efficient ways certainly exist...)
+  if (i == 1) {
+    wgscan_bal <- scan
+  } else {
+    wgscan_bal <- rbind(wgscan_bal, scan)
+  }
+}
+
+#########################################Bardata
+for(i in 1:26) {
+  # haplotype file name for each chromosome
+  vcf_file = paste("Sam_IrishSuffolkvsScottishBlackface_Bar_chr", i, "_phased.vcf.gz", sep = "")
+  # create internal representation
+  hh <-data2haplohh(hap_file = vcf_file, 
+                    chr.name = i, 
+                    polarize_vcf = FALSE,
+                    vcf_reader = "data.table")  # Skip ancestral allele polarization
+  # perform scan on a single chromosome (calculate iHH values)
+  scan <- scan_hh(hh)
+  # concatenate chromosome-wise data frames to
+  # a data frame for the whole genome
+  # (more efficient ways certainly exist...)
+  if (i == 1) {
+    wgscan_bar <- scan
+  } else {
+    wgscan_bar <- rbind(wgscan_bar, scan)
+  }
+}
+
+
+#################################################################################################################
+xpehh.BAL_BAR <- ies2xpehh(scan_pop1 =  wgscan_bal,
+                           scan_pop2 =  wgscan_bar,
+                           popname1 = "BAL",
+                           popname2 = "BAR",
+                           standardize = TRUE,
+                           p.adjust.method = "BH")
+
+
+distribplot(xpehh.BAL_BAR$XPEHH_BAL_BAR, xlab = "XPEHH")
+
+xpehh.BAL_BAR$LOGPVALUE2 = xpehh.BAL_BAR$LOGPVALUE
+Pval.xpehh2n<- (1-2*(abs(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR)-0.5)))
+#xpehh.BAL_BAR$LOGPVALUE3<- -log(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR))
+xpehh.BAL_BAR$LOGPVALUE<- -log(Pval.xpehh2n)
+write.table(xpehh.BAL_BAR[,], file = "TOTAL_BAL_BAR_xpehh.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)
+OrderBAL_BAR<-xpehh.BAL_BAR[order(-xpehh.BAL_BAR$LOGPVALUE), ]
+OrderBAL_BAR[392,3]
+write.table(OrderBAL_BAR[c(1:392),], file = "BAL_BARNew.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)
+
+
+xpehh.BAL_BAR$CHR<- as.integer(xpehh.BAL_BAR$CHR)#change CHROM to interger
+
+fdata_cumxp2n <- xpehh.BAL_BAR %>% 
+  group_by(CHR) %>% 
+  summarise(max_bp = max(POSITION)) %>% 
+  mutate(bp_add = lag(cumsum(as.numeric(max_bp)), default = 0)) %>% 
+  select(CHR, bp_add)
+
+fst_dataxp2n <- xpehh.BAL_BAR %>% 
+  inner_join(fdata_cumxp2n, by = "CHR") %>% 
+  mutate(bp_cum = POSITION + bp_add)
+
+faxisdfxp2n = fst_dataxp2n %>% group_by(CHR) %>% summarize(center=( max(bp_cum) + min(bp_cum) ) / 2 )
+
+fsigxp2n <-c(-2.57,2.57)
+
+#rep(c("#E69F00", "#56B4E9", "#009E73","#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+xpebb<-ggplot(fst_dataxp2n, aes(x=bp_cum, y= XPEHH_BAL_BAR)) +
+  
+  # Show all points
+  geom_point( aes(color=as.factor(CHR)), alpha=0.8, size=0.1) +
+  scale_color_manual(values = rep(c("grey", "black"), 26 )) +
+  geom_hline(yintercept = fsigxp2n , color = "red", linetype = "solid",linewidth = 0.2) +
+  # custom X axis:
+  scale_x_continuous( label = c(1,2,3,4,5,6,7,"",9,"",11,"",13,"",15,"",17,"",19,"","",22,"",24,"",26), breaks= faxisdfxp2n$center ) +
+  scale_y_continuous(expand = c(0, 0),limits = c(-8,8),breaks = scales::pretty_breaks(n = 8)) +     # remove space between plot area and x axis
+  labs(
+    subtitle = expression(paste("XP-EHH")),
+    x =expression(paste("Chromosome")),
+    y =expression(paste("XP-EHH"))
+  ) + 
+  # Custom the theme:
+  theme_bw() +
+  theme_classic()+
+  theme(
+    legend.position="none",plot.margin = margin(0,0.1,0.2,0.1,unit = "mm"),line = element_line(linewidth = 0.2,arrow = NULL),
+    axis.line.x.bottom = element_line(linewidth = 0.2,arrow = NULL), axis.line.y.left = element_line(linewidth = 0.2,arrow = NULL),axis.text = element_text(size = 9),axis.title = element_text(size = 8),
+    #plot.title = element_text(family="Arial",face="plain", color="Black", 
+    #                            size=15, angle=0,hjust= 1, vjust = -5),
+    plot.subtitle = element_text(family="Arial",face="plain", color="Black", 
+                                 size=12, angle=0,hjust= 1, vjust = -5),
+    axis.text.x = element_text(family= "Arial",face="plain", color="Black", 
+                               size=5, angle=0,hjust= 0.5, vjust = 1),
+    axis.text.y = element_text(family= "Arial",face="plain", color="Black", 
+                               size=5, angle=0,hjust= 1, vjust = 0.5),
+    axis.title.x = element_text(family= "Arial",face="plain", color="Black", 
+                                size=9, angle=0,hjust= 0.5, vjust = 1),
+    axis.title.y = element_text(family= "Arial",face="plain", color="Black", 
+                                size=9, angle=90,hjust= 0.5, vjust = 0.5),
+    axis.ticks=element_line(linewidth = 0.2,arrow = NULL))
+
+tiff(filename = "Sam_IrishSuffolkvsScottishBlackfaceXPEHH.tiff",
+     width=9,height=5, units = "cm",
+     compression = "lzw",
+     bg = "white", res = 1000, family = "",
+     type ="cairo")
+par(mar=c(5.1, 4.1, 4.1, 2.1)) 
+ggarrange(xpebb,
+          labels ="",
+          ncol = 1, nrow = 1, hjust= -0.1, vjust = 1.0,widths = 1, heights = 0.2,font.label = list(size = 12, color = "black", face = "bold", family = NULL),legend = NULL)
+dev.off()
+
+tiff(filename = "Sam_IrishSuffolkvsScottishBlackface_AllDataset1and2_Final-afterSM.tiff",
+     width=18,height=15 , units = "cm",
+     compression = "lzw",
+     bg = "white", res = 1000, family = "",
+     type ="cairo")
+par(mar=c(5.1, 4.1, 4.1, 2.1)) 
+ggarrange(fstothers,xpebb,fstothershap,
+          labels =c("A","B","","","","",""),
+          ncol = 2, nrow = 3, hjust= -0.5, vjust = 1.0,widths = 1, heights = 0.2,font.label = list(size = 12, color = "black", face = "bold", family = NULL),legend = NULL)
+dev.off()
 
 ##################
 ## 5. XPEHH Top 20

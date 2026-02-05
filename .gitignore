@@ -39,3 +39,9 @@ plink2.exe
 reynolds2kinship.R
 scaling_chi2_hapflk.py
 spider.conf.xml
+.~lock.Dataset.fam#
+DatasetFst.fst
+DatasetFst.nosex
+clusterfst_headers.txt
+grp1.txt
+grp2.txt

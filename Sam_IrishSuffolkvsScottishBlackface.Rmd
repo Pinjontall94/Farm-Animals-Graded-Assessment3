@@ -27,15 +27,14 @@ cat headers.txt grp1.txt grp2.txt > clusterfst.txt
 
 
 ```{r}
-extract.breeds <- function(bfileBasename, clusters) {
+extract.breeds <- function(bfileBasename, clusters, newBfileBasename) {
   system(paste("plink --bfile", bfileBasename,
-               "--chr-set 26 --autosome",
-               "--fst --within clusterfst.txt",
-               "--out DatasetFst",
+               "--within clusterfst.txt",
+               "--make-bed --out", newBfileBasename,
                sep = " "))
 }
 
-data <- extract.breeds("Dataset", "clusterfst.txt")
+data <- extract.breeds("Dataset", "clusterfst.txt", "Sam_IrishSuffolkvsScottishBlackface")
 ```
 
 
@@ -43,11 +42,17 @@ data <- extract.breeds("Dataset", "clusterfst.txt")
 Perform a standardized FST analysis between the selected breeds and upload the resulting plot with repetitive grey and black colour (use a y-axis of 6 and select only significant region with more than 4 SNPs). (5 points) (save file as example: Yourfirtsname_ScottishTexelvsScottishBlackface)
 
 ```{r data}
-std.fst <- function(data, outfile) {
-  errorCondition("not implemented")
+std.fst <- function(bfileBasename, clusterFile, fstOutFileBasename) {
+  system(paste("plink --bfile", bfileBasename,
+               "--chr-set 26 --autosome",
+               "--fst --within", clusterFile,
+               "--out", fstOutFileBasename,
+               sep = " "))
 }
 
-data.fst <- std.fst(data, "Sam_IrishSuffolkvsScottishBlackface_FST.png")
+data.fst <- std.fst("Sam_IrishSuffolkvsScottishBlackface",
+                    "clusterfst.txt",
+                    "Sam_IrishSuffolkvsScottishBlackface_FST")
 ```
 
 

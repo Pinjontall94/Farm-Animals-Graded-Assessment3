@@ -76,6 +76,8 @@ fst.Balothers.n <- fst.calc.Balothers.n2(fst.Balothers.weir, 1000000)
 
 fst.Balothers.n2 <- fst.calc.Balothers.n2(fst.Balothers.n, 4)
 fst.meanSNP <- mean(fst.Balothers.n2$freq)
+fst.sdSNP <- sd(fst.Balothers.n2$freq)
+fst.range <- range(fst.Balothers.n2$freq)
 
 ################
 ## 3. Top 20 SNP

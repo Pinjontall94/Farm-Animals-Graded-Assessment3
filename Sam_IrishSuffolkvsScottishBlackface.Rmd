@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
 ```
 
 Dear student,
@@ -16,12 +18,24 @@ Follow the instructions carefully and report your results accordingly. Using the
 ## 1.  
 Keep two breeds (IrishSuffolk and ScottishBlackface) from the given dataset and upload the bfile (including log file) of your own specific data subset with the two breeds in compressed zip format. (2.5 points) (save file as example: Yourfirstname_ScottishTexelvsScottishBlackface)
 
+```{bash}
+echo -"FID IID Cluster" > headers.txt
+cut -d" " -f 1,2 Dataset.fam | grep "IrishSuffolk" | awk '{ print $0, "Grp1" }' > grp1.txt
+cut -d" " -f 1,2 Dataset.fam | grep "ScottishBlackface" | awk '{ print $0, "Grp2" }' > grp2.txt
+cat headers.txt grp1.txt grp2.txt > clusterfst.txt
+```
+
+
 ```{r}
-extract.breeds <- function(breeds, bfile) {
-  errorCondition("not implemented")
+extract.breeds <- function(bfileBasename, clusters) {
+  system(paste("plink --bfile", bfileBasename,
+               "--chr-set 26 --autosome",
+               "--fst --within clusterfst.txt",
+               "--out DatasetFst",
+               sep = " "))
 }
 
-data <- extract.breeds(c("IrishSuffolk", "ScottishBlackface"), "Dataset.bed")
+data <- extract.breeds("Dataset", "clusterfst.txt")
 ```
 
 

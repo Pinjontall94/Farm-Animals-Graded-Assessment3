@@ -79,12 +79,69 @@ fst.meanSNP <- mean(fst.Balothers.n2$freq)
 fst.sdSNP <- sd(fst.Balothers.n2$freq)
 fst.range <- range(fst.Balothers.n2$freq)
 
+# calculate total number of info windows
 # for each chromosome (here, 26)
 for(i in 1:26) {
   fst.Balothers.n3 <- fst.Balothers.n2 %>% filter(CHR==i)
   fst.Balothers.n3$mean <- as.factor(fst.Balothers.n3$mean)
   fst.Wnd = str(length(levels(fst.Balothers.n3$mean)))
 }
+
+# cat << EOF > cols.txt
+# <copy-paste previous output into vt-100 emulator window>
+# EOF
+
+# order by fst and check fst value for top 1% SNP
+fst.Balothers.n22 <- fst.Balothers.n2[order(-fst.Balothers.n2$ZFST), ]
+fst.Balothers.n22[392,10]
+
+fst.Balothers.n2$CHR<- as.integer(fst.Balothers.n2$CHR)#change CHROM to interger
+
+fdata_cum <- fst.Balothers.n2 %>% 
+  group_by(CHR) %>% 
+  summarise(max_bp = max(POS)) %>% 
+  mutate(bp_add = lag(cumsum(as.numeric(max_bp)), default = 0)) %>% 
+  select(CHR, bp_add)
+
+fst_data <- fst.Balothers.n2 %>% 
+  inner_join(fdata_cum, by = "CHR") %>% 
+  mutate(bp_cum = POS + bp_add)
+
+faxisdf = fst_data %>% group_by(CHR) %>% summarize(center=( max(bp_cum) + min(bp_cum) ) / 2 )
+
+fsig <- fst.Balothers.n22[ceiling(nrow(fst.Balothers.n22) * 0.01), "ZFST"]$ZFST
+
+
+fstothers<-ggplot(fst_data, aes(x=bp_cum, y= ZFST)) +
+  
+  # Show all points
+  geom_point( aes(color=as.factor(CHR)), alpha=0.8, size=0.1) +
+  scale_color_manual(values = rep(c("black", "blue"), 26 )) +
+  geom_hline(yintercept = fsig , color = "grey40", linetype = "dashed") +
+  # custom X axis:
+  scale_x_continuous( label = c(1,2,3,4,5,6,7,8,9,"",11,"",13,"",15,"",17,"",19,"","",22,"","","",26), breaks= faxisdf$center ) +
+  scale_y_continuous(expand = c(0, 0),limits = c(0,4)) +     # remove space between plot area and x axis
+  labs(
+    x =expression(paste("Chromosome")),
+    y =expression(paste("ZF"["ST"]))
+  ) + 
+  # Custom the theme:
+  theme_bw() +
+  theme_classic()+
+  theme( 
+    legend.position="none",plot.margin = margin(0.5,3,0.5,1,"cm"),
+    axis.line.x.bottom = element_line(linewidth = 0.6,arrow = NULL), axis.line.y.left = element_line(linewidth = 0.6,arrow = NULL),axis.text = element_text(size = 7),axis.title = element_text(size = 8))
+
+tiff(filename = "Sam_IrishSuffolkvsScottishBlackface_FST.tiff",
+     width=15,height=5 , units = "cm",
+     compression = "lzw",
+     bg = "white", res = 1200, family = "", restoreConsole = TRUE,
+     type ="windows")
+par(mar=c(5.1, 4.1, 4.1, 2.1)) 
+ggarrange(fstothers,
+          labels ="",
+          ncol = 1, nrow = 1, hjust= -0.1, vjust = 1.0,widths = 1, heights = 0.2,font.label = list(size = 12, color = "black", face = "bold", family = NULL),legend = NULL)
+dev.off()
 
 ################
 ## 3. Top 20 SNP

@@ -184,17 +184,18 @@ data.xpehh <- xpehh("Sam_IrishSuffolkvsScottishBlackface", "Sam_IrishSuffolkvsSc
 
 #create bfile for each chromosome per population
 CHR= c(1:26)
+f="Sam_IrishSuffolkvsScottishBlackface"
 i="Sam_IrishSuffolkvsScottishBlackface_Bal"
 library(foreach)
 foreach (r=CHR) %do% {
-  cmd <- paste0("plink2 --bfile ", i, "new --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
+  cmd <- paste0("plink2 --bfile ", f, " --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 
 i="Sam_IrishSuffolkvsScottishBlackface_Bar"
 library(foreach)
 foreach (r=CHR) %do% {
-  cmd <- paste0("plink2 --bfile ", i, "new --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
+  cmd <- paste0("plink2 --bfile ", f, " --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 
@@ -203,14 +204,14 @@ foreach (r=CHR) %do% {
 i="Sam_IrishSuffolkvsScottishBlackface_Bal"
 library(foreach)
 foreach (r=CHR) %do% {
-  cmd <- paste0("plink2 --bfile ", i, "_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
+  cmd <- paste0("plink2 --bfile ", f, "_Bal_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 
 i="Sam_IrishSuffolkvsScottishBlackface_Bar"
 library(foreach)
 foreach (r=CHR) %do% {
-  cmd <- paste0("plink2 --bfile ", i, "_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
+  cmd <- paste0("plink2 --bfile ", f, "_Bar_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 

@@ -269,35 +269,35 @@ for(i in 1:26) {
 
 
 #################################################################################################################
-xpehh.BAL_BAR <- ies2xpehh(scan_pop1 =  wgscan_bal,
-                           scan_pop2 =  wgscan_bar,
+xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE <- ies2xpehh(scan_pop1 =  wgscan_IrishSuffolk,
+                           scan_pop2 =  wgscan_ScottishBlackface,
                            popname1 = "IrishSuffolk",
                            popname2 = "ScottishBlackface",
                            standardize = TRUE,
                            p.adjust.method = "BH")
 
 
-distribplot(xpehh.BAL_BAR$XPEHH_BAL_BAR, xlab = "XPEHH")
+distribplot(xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$XPEHH_IRISHSUFFOLK_SCOTTISHBLACKFACE, xlab = "XPEHH")
 
-xpehh.BAL_BAR$LOGPVALUE2 <- xpehh.BAL_BAR$LOGPVALUE
-Pval.xpehh2n <- (1-2*(abs(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR)-0.5)))
-#xpehh.BAL_BAR$LOGPVALUE3<- -log(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR))
-xpehh.BAL_BAR$LOGPVALUE<- -log(Pval.xpehh2n)
-write.table(xpehh.BAL_BAR[,], file = "TOTAL_BAL_BAR_xpehh.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)
-OrderBAL_BAR<-xpehh.BAL_BAR[order(-xpehh.BAL_BAR$LOGPVALUE), ]
-OrderBAL_BAR[392,3]
-write.table(OrderBAL_BAR[c(1:392),], file = "BAL_BARNew.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)
+xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$LOGPVALUE2 <- xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$LOGPVALUE
+Pval.xpehh2n <- (1-2*(abs(pnorm(xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$XPEHH_IRISHSUFFOLK_SCOTTISHBLACKFACE)-0.5)))
+#xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$LOGPVALUE3<- -log(pnorm(xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$XPEHH_IRISHSUFFOLK_SCOTTISHBLACKFACE))
+xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$LOGPVALUE<- -log(Pval.xpehh2n)
+write.table(xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE[,], file = "TOTAL_IRISHSUFFOLK_SCOTTISHBLACKFACE_xpehh.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)
+OrderIRISHSUFFOLK_SCOTTISHBLACKFACE<-xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE[order(-xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$LOGPVALUE), ]
+OrderIRISHSUFFOLK_SCOTTISHBLACKFACE[392,3]
+write.table(OrderIRISHSUFFOLK_SCOTTISHBLACKFACE[c(1:392),], file = "IRISHSUFFOLK_SCOTTISHBLACKFACENew.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)
 
 
-xpehh.BAL_BAR$CHR<- as.integer(xpehh.BAL_BAR$CHR)#change CHROM to interger
+xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$CHR<- as.integer(xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE$CHR)#change CHROM to interger
 
-fdata_cumxp2n <- xpehh.BAL_BAR %>% 
+fdata_cumxp2n <- xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE %>% 
   group_by(CHR) %>% 
   summarise(max_bp = max(POSITION)) %>% 
   mutate(bp_add = lag(cumsum(as.numeric(max_bp)), default = 0)) %>% 
   select(CHR, bp_add)
 
-fst_dataxp2n <- xpehh.BAL_BAR %>% 
+fst_dataxp2n <- xpehh.IRISHSUFFOLK_SCOTTISHBLACKFACE %>% 
   inner_join(fdata_cumxp2n, by = "CHR") %>% 
   mutate(bp_cum = POSITION + bp_add)
 
@@ -308,7 +308,7 @@ fsigxp2n <-c(-2.57,2.57)
 #rep(c("#E69F00", "#56B4E9", "#009E73","#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 
-xpebb<-ggplot(fst_dataxp2n, aes(x=bp_cum, y= XPEHH_BAL_BAR)) +
+xpebb<-ggplot(fst_dataxp2n, aes(x=bp_cum, y= XPEHH_IRISHSUFFOLK_SCOTTISHBLACKFACE)) +
   
   # Show all points
   geom_point( aes(color=as.factor(CHR)), alpha=0.8, size=0.1) +

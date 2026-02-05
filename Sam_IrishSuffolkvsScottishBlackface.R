@@ -79,6 +79,13 @@ fst.meanSNP <- mean(fst.Balothers.n2$freq)
 fst.sdSNP <- sd(fst.Balothers.n2$freq)
 fst.range <- range(fst.Balothers.n2$freq)
 
+# for each chromosome (here, 26)
+for(i in 1:26) {
+  fst.Balothers.n3 <- fst.Balothers.n2 %>% filter(CHR==i)
+  fst.Balothers.n3$mean <- as.factor(fst.Balothers.n3$mean)
+  fst.Wnd = str(length(levels(fst.Balothers.n3$mean)))
+}
+
 ################
 ## 3. Top 20 SNP
 ################

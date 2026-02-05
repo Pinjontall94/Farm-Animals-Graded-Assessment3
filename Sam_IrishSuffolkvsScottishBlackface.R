@@ -182,17 +182,21 @@ xpehh <- function(bfileBasename, outfile) {
 }
 data.xpehh <- xpehh("Sam_IrishSuffolkvsScottishBlackface", "Sam_IrishSuffolkvsScottishBlackface_XPEHH.tiff")
 
+extract.breeds("Dataset", "clusterIrishSuffolk.txt", "Sam_IrishSuffolk")
+extract.breeds("Dataset", "clusterScottishBlackface.txt", "Sam_ScottishBlackface")
+
 #create bfile for each chromosome per population
 CHR= c(1:26)
-f="Sam_IrishSuffolkvsScottishBlackface"
-i="Sam_IrishSuffolkvsScottishBlackface_Bal"
+f="Sam_IrishSuffolk"
+i="Sam_IrishSuffolk"
 library(foreach)
 foreach (r=CHR) %do% {
   cmd <- paste0("plink2 --bfile ", f, " --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 
-i="Sam_IrishSuffolkvsScottishBlackface_Bar"
+f="Sam_ScottishBlackface"
+i="Sam_ScottishBlackface"
 library(foreach)
 foreach (r=CHR) %do% {
   cmd <- paste0("plink2 --bfile ", f, " --chr-set 26 --chr ", r, " --make-bed --out ", i, "_chr", r, "_data")
@@ -201,30 +205,30 @@ foreach (r=CHR) %do% {
 
 
 #create vcf for each chromosome per population
-i="Sam_IrishSuffolkvsScottishBlackface_Bal"
+i="Sam_IrishSuffolk"
 library(foreach)
 foreach (r=CHR) %do% {
-  cmd <- paste0("plink2 --bfile ", f, "_Bal_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
+  cmd <- paste0("plink2 --bfile ", f, "_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 
-i="Sam_IrishSuffolkvsScottishBlackface_Bar"
+i="Sam_ScottishBlackface"
 library(foreach)
 foreach (r=CHR) %do% {
-  cmd <- paste0("plink2 --bfile ", f, "_Bar_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
+  cmd <- paste0("plink2 --bfile ", f, "_chr", r, "_data --chr-set 26 --chr ", r, " --recode vcf --out ", i, "_chr", r, "_data")
   system(cmd)
 }
 
 
 ## Run Beagle to phase each VCF file in linux for each population and all chromosomes
-for z in {1..26};do java -Xmx25000m -jar beagle.jar gt=Sam_IrishSuffolkvsScottishBlackface_Bal_chr${z}_data.vcf  out=Sam_IrishSuffolkvsScottishBlackface_Bal_chr${z}_phased nthreads=128;done
-for z in {1..26};do java -Xmx25000m -jar beagle.jar gt=Sam_IrishSuffolkvsScottishBlackface_Bar_chr${z}_data.vcf  out=Sam_IrishSuffolkvsScottishBlackface_Bar_chr${z}_phased nthreads=128;done
+for z in {1..26};do java -Xmx25000m -jar beagle.jar gt=Sam_IrishSuffolk_chr${z}_data.vcf  out=Sam_IrishSuffolk_chr${z}_phased nthreads=128;done
+for z in {1..26};do java -Xmx25000m -jar beagle.jar gt=Sam_ScottishBlackface_chr${z}_data.vcf  out=Sam_ScottishBlackface_chr${z}_phased nthreads=128;done
 read.table
 
 ##################################################################################Baldata
 for(i in 1:26) {
   # haplotype file name for each chromosome
-  vcf_file = paste("Sam_IrishSuffolkvsScottishBlackface_Bal_chr", i, "_phased.vcf.gz", sep = "")
+  vcf_file = paste("Sam_IrishSuffolk_chr", i, "_phased.vcf.gz", sep = "")
   # create internal representation
   hh <-data2haplohh(hap_file = vcf_file, 
                     chr.name = i, 
@@ -236,16 +240,16 @@ for(i in 1:26) {
   # a data frame for the whole genome
   # (more efficient ways certainly exist...)
   if (i == 1) {
-    wgscan_bal <- scan
+    wgscan_IrishSuffolk <- scan
   } else {
-    wgscan_bal <- rbind(wgscan_bal, scan)
+    wgscan_IrishSuffolk <- rbind(wgscan_bal, scan)
   }
 }
 
 #########################################Bardata
 for(i in 1:26) {
   # haplotype file name for each chromosome
-  vcf_file = paste("Sam_IrishSuffolkvsScottishBlackface_Bar_chr", i, "_phased.vcf.gz", sep = "")
+  vcf_file = paste("Sam_ScottishBlackface_chr", i, "_phased.vcf.gz", sep = "")
   # create internal representation
   hh <-data2haplohh(hap_file = vcf_file, 
                     chr.name = i, 
@@ -257,9 +261,9 @@ for(i in 1:26) {
   # a data frame for the whole genome
   # (more efficient ways certainly exist...)
   if (i == 1) {
-    wgscan_bar <- scan
+    wgscan_ScottishBlackface <- scan
   } else {
-    wgscan_bar <- rbind(wgscan_bar, scan)
+    wgscan_ScottishBlackface <- rbind(wgscan_bar, scan)
   }
 }
 
@@ -267,16 +271,16 @@ for(i in 1:26) {
 #################################################################################################################
 xpehh.BAL_BAR <- ies2xpehh(scan_pop1 =  wgscan_bal,
                            scan_pop2 =  wgscan_bar,
-                           popname1 = "BAL",
-                           popname2 = "BAR",
+                           popname1 = "IrishSuffolk",
+                           popname2 = "ScottishBlackface",
                            standardize = TRUE,
                            p.adjust.method = "BH")
 
 
 distribplot(xpehh.BAL_BAR$XPEHH_BAL_BAR, xlab = "XPEHH")
 
-xpehh.BAL_BAR$LOGPVALUE2 = xpehh.BAL_BAR$LOGPVALUE
-Pval.xpehh2n<- (1-2*(abs(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR)-0.5)))
+xpehh.BAL_BAR$LOGPVALUE2 <- xpehh.BAL_BAR$LOGPVALUE
+Pval.xpehh2n <- (1-2*(abs(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR)-0.5)))
 #xpehh.BAL_BAR$LOGPVALUE3<- -log(pnorm(xpehh.BAL_BAR$XPEHH_BAL_BAR))
 xpehh.BAL_BAR$LOGPVALUE<- -log(Pval.xpehh2n)
 write.table(xpehh.BAL_BAR[,], file = "TOTAL_BAL_BAR_xpehh.csv",sep="\t", row.names=TRUE, col.names=TRUE,  quote = T)

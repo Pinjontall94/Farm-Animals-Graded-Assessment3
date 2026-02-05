@@ -59,7 +59,23 @@ fst.mean.oth <- mean(fst.Balothers.weir$FST, na.rm = TRUE)
 # Calc Zfst
 #----------
 fst.Balothers.weir$Zfst <- (fst.Balothers.weir$FST - fst.mean.oth)/fst.sd.oth
+n2 <- 1000000 #look at window of 1MB
+# calc mean zfst within non-overlapping window of 1Mb
+fst.calc.Balothers.n <- function(fstData, nonOverlappingWindow) {
+  fstData %>% 
+    group_by(fstData$CHR, mean = (fstData$POS) %/% nonOverlappingWindow) %>% 
+    mutate(freq = n()) %>%
+    mutate(ZFST = mean(Zfst,na.rm = TRUE))
+}
 
+fst.calc.Balothers.n2 <- function(balothersN, minSNPs) {
+  balothersN %>% filter(freq > minSNPs)
+}
+
+fst.Balothers.n <- fst.calc.Balothers.n2(fst.Balothers.weir, 1000000)
+
+fst.Balothers.n2 <- fst.calc.Balothers.n2(fst.Balothers.n, 4)
+fst.meanSNP <- mean(fst.Balothers.n2$freq)
 
 ################
 ## 3. Top 20 SNP

@@ -3,6 +3,9 @@
 # cut -d" " -f 1,2 Dataset.fam | grep "ScottishBlackface" | awk '{ print $0, "Grp2" }' > grp2.txt
 # cat headers.txt grp1.txt grp2.txt > clusterfst.txt
 
+library(hierfstat)
+library(tidyverse)
+
 ###############
 ## 1. Data Prep
 ###############
@@ -55,7 +58,7 @@ fst.mean.oth <- mean(fst.Balothers.weir$FST, na.rm = TRUE)
 #----------
 # Calc Zfst
 #----------
-fst.Balothers.weir$Zfst <- ((fst.Balothers.weir$Fst - fst.mean.oth)/fst.sd.oth)
+fst.Balothers.weir$Zfst <- (fst.Balothers.weir$FST - fst.mean.oth)/fst.sd.oth
 
 
 ################

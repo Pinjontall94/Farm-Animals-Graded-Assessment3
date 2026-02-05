@@ -5,6 +5,8 @@
 
 library(hierfstat)
 library(tidyverse)
+library(ggplot2)
+library(ggpubr)
 
 ###############
 ## 1. Data Prep
@@ -112,15 +114,15 @@ faxisdf = fst_data %>% group_by(CHR) %>% summarize(center=( max(bp_cum) + min(bp
 fsig <- fst.Balothers.n22[ceiling(nrow(fst.Balothers.n22) * 0.01), "ZFST"]$ZFST
 
 
-fstothers<-ggplot(fst_data, aes(x=bp_cum, y= ZFST)) +
+fstothers <- ggplot(fst_data, aes(x=bp_cum, y= ZFST)) +
   
   # Show all points
   geom_point( aes(color=as.factor(CHR)), alpha=0.8, size=0.1) +
-  scale_color_manual(values = rep(c("black", "blue"), 26 )) +
+  scale_color_manual(values = rep(c("grey", "black"), 26 )) +
   geom_hline(yintercept = fsig , color = "grey40", linetype = "dashed") +
   # custom X axis:
   scale_x_continuous( label = c(1,2,3,4,5,6,7,8,9,"",11,"",13,"",15,"",17,"",19,"","",22,"","","",26), breaks= faxisdf$center ) +
-  scale_y_continuous(expand = c(0, 0),limits = c(0,4)) +     # remove space between plot area and x axis
+  scale_y_continuous(expand = c(0, 0),limits = c(0,6)) +     # remove space between plot area and x axis
   labs(
     x =expression(paste("Chromosome")),
     y =expression(paste("ZF"["ST"]))
@@ -135,8 +137,8 @@ fstothers<-ggplot(fst_data, aes(x=bp_cum, y= ZFST)) +
 tiff(filename = "Sam_IrishSuffolkvsScottishBlackface_FST.tiff",
      width=15,height=5 , units = "cm",
      compression = "lzw",
-     bg = "white", res = 1200, family = "", restoreConsole = TRUE,
-     type ="windows")
+     bg = "white", res = 1200, family = "",
+     type ="cairo")
 par(mar=c(5.1, 4.1, 4.1, 2.1)) 
 ggarrange(fstothers,
           labels ="",
@@ -189,6 +191,9 @@ report.snps.xpehh <- function(data, outfile) {
 }
 data.xpehh.top20 <- report.snps.xpehh(data.xpehh, "Sam_IrishSuffolkvsScottishBlackface_XPEHH_SNP20.xlsx")
 
+bim <- read.table("Sam_IrishSuffolkvsScottishBlackface.bim", header = FALSE, stringsAsFactors = FALSE)
+colnames(bim) <- c("CHR", "SNP", "CM", "POSITION", "A1", "A2")
+bim$CHR <- as.integer(bim$CHR)
 
 ####################################
 ## 6. Indicate Breed Under Selection

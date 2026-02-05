@@ -7,6 +7,8 @@ library(hierfstat)
 library(tidyverse)
 library(ggplot2)
 library(ggpubr)
+library(rehh)
+library(data.table)
 
 ###############
 ## 1. Data Prep
@@ -153,14 +155,18 @@ dev.off()
 # chromosome, SNP name, BP position and ZFST values) (5 points). (save file as 
 # example: Yourfirstname_ScottishTexelvsScottishBlackface)
 
-report.snps.fst <- function(numTopSnps, outfile) {
-  errorCondition("not implemented")
+report.snps.fst <- function(numTopSnps, fstData, outfile) {
+  topSnps <- fstData[numTopSnps,]
   
-  # writexl::write_xlsx(topSnps, outfile)
+  writexl::write_xlsx(topSnps, outfile)
 }
 
-report.snps.fst(20, "Sam_IrishSuffolkvsScottishBlackface_FST_SNP20.xlsx")
+# report.snps.fst(20, fst.Balothers.n3, "Sam_IrishSuffolkvsScottishBlackface_FST_SNP20.xlsx")
 
+write.csv(x = fst.Balothers.n3, file = "Sam_IrishSuffolkvsScottishBlackface_FST_SNP20.csv")
+
+# not working, use write.csv and convert in libreoffice calc to xlsx
+# writexl::write_xlsx(fst.top20, path = "Sam_IrishSuffolkvsScottishBlackface_FST_SNP20.xlsx")
 
 ###########
 ## 4. XPEHH
@@ -171,7 +177,7 @@ report.snps.fst(20, "Sam_IrishSuffolkvsScottishBlackface_FST_SNP20.xlsx")
 # file as example: Yourfirstname_ScottishTexelvsScottishBlackface)
 
 xpehh <- function(bfileBasename, outfile) {
-  errorCondition("not implemented")
+  data <- bfileBasename
 }
 data.xpehh <- xpehh("Sam_IrishSuffolkvsScottishBlackface", "Sam_IrishSuffolkvsScottishBlackface_XPEHH.tiff")
 

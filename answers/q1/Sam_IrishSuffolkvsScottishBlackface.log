@@ -1,0 +1,32 @@
+PLINK v1.9.0-b.7.11 64-bit (19 Aug 2025)
+Options in effect:
+  --bfile Dataset
+  --make-bed
+  --out Sam_IrishSuffolkvsScottishBlackface
+  --within clusterfst.txt
+
+Hostname: bento
+Working directory: /home/sammi/Desktop/Farm-Animals-Graded-Assessment3
+Start time: Thu Feb  5 20:02:56 2026
+
+Random number seed: 1770318176
+15654 MB RAM detected; reserving 7827 MB for main workspace.
+45134 variants loaded from .bim file.
+158 people (75 males, 66 females, 17 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to Sam_IrishSuffolkvsScottishBlackface.nosex .
+--within: 2 clusters loaded, covering a total of 71 people.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 158 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Warning: 42611 het. haploid genotypes present (see
+Sam_IrishSuffolkvsScottishBlackface.hh ); many commands treat these as missing.
+Warning: Nonmissing nonmale Y chromosome genotype(s) present; many commands
+treat these as missing.
+Total genotyping rate is 0.999589.
+45134 variants and 158 people pass filters and QC.
+Note: No phenotypes present.
+--make-bed to Sam_IrishSuffolkvsScottishBlackface.bed +
+Sam_IrishSuffolkvsScottishBlackface.bim +
+Sam_IrishSuffolkvsScottishBlackface.fam ... done.
+
+End time: Thu Feb  5 20:02:56 2026
